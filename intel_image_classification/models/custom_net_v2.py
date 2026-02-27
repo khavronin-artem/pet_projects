@@ -2,7 +2,7 @@ import torch
 from torch import nn
 
 
-class Net_v2(nn.Module):
+class Net(nn.Module):
     def __init__(self):
         super().__init__()
         self.num_of_basic_blocks = 3
