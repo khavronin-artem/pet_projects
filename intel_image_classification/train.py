@@ -113,7 +113,9 @@ class Trainer:
         finally:
             self.writer.close()
 
-    def load_checkpoint(self, path="checkpoints/best_model_checkpoint.pth"):
+    def load_checkpoint(
+        self, path="checkpoints/best_model_checkpoint.pth", verbose=True
+    ):
         """Load checkpoint
 
         Args:
@@ -126,11 +128,9 @@ class Trainer:
         self.best_f1 = checkpoint["f1"]
         self.global_step = checkpoint["global_step"]
         last_epoch = checkpoint["epoch"]
-        tqdm.write(f"Resuming from epoch {last_epoch + 1}")
+        if verbose:
+            tqdm.write(f"Resuming from epoch {last_epoch + 1}")
         return last_epoch + 1
-
-    def test(self):
-        return Path(self.config["checkpoint_path"])
 
 
 if __name__ == "__main__":

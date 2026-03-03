@@ -69,9 +69,13 @@ def get_datasets_and_loaders(
         batch_size=train_batch_size,
         shuffle=True,
         num_workers=train_num_workers,
+        persistent_workers=True,
     )
     valid_loader = torch.utils.data.DataLoader(
-        valid_set, batch_size=valid_batch_size, num_workers=valid_num_workers
+        valid_set,
+        batch_size=valid_batch_size,
+        num_workers=valid_num_workers,
+        persistent_workers=True,
     )
 
     return train_set, train_loader, valid_set, valid_loader

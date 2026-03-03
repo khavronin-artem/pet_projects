@@ -17,7 +17,7 @@ class Net(nn.Module):
             nn.Conv2d(in_channels=3, out_channels=64, kernel_size=5, stride=2),
             # 64x63x63
             nn.BatchNorm2d(num_features=64),
-            nn.ReLU(),
+            nn.ELU(),
             nn.AvgPool2d(kernel_size=2, stride=2),
             # 64x31x31
         )
@@ -32,7 +32,7 @@ class Net(nn.Module):
                         bias=False,
                     ),
                     nn.BatchNorm2d(num_features=64),
-                    nn.ReLU(),
+                    nn.ELU(),
                     nn.Conv2d(
                         in_channels=64,
                         out_channels=64,
@@ -41,7 +41,7 @@ class Net(nn.Module):
                         bias=False,
                     ),
                     nn.BatchNorm2d(num_features=64),
-                    nn.ReLU(),
+                    nn.ELU(),
                     nn.Conv2d(
                         in_channels=64,
                         out_channels=64,
@@ -50,7 +50,7 @@ class Net(nn.Module):
                         bias=False,
                     ),
                     nn.BatchNorm2d(num_features=64),
-                    nn.ReLU(),
+                    nn.ELU(),
                 )
                 for i in range(self.num_of_basic_blocks)
             ]
@@ -58,27 +58,21 @@ class Net(nn.Module):
         self.conv1x1_0 = nn.Sequential(
             nn.Conv2d(in_channels=128, out_channels=64, kernel_size=1),
             nn.BatchNorm2d(num_features=64),
-            nn.ReLU(),
+            nn.ELU(),
             nn.Dropout2d(p=0.2),
         )
         self.conv1x1_1 = nn.Sequential(
             nn.Conv2d(in_channels=192, out_channels=64, kernel_size=1),
             nn.BatchNorm2d(num_features=64),
-            nn.ReLU(),
-            nn.Dropout2d(p=0.2),
-        )
-        self.conv1x1_2 = nn.Sequential(
-            nn.Conv2d(in_channels=192, out_channels=64, kernel_size=1),
-            nn.BatchNorm2d(num_features=64),
-            nn.ReLU(),
+            nn.ELU(),
             nn.Dropout2d(p=0.2),
         )
         self.final_pool = nn.AvgPool2d(kernel_size=31)
         self.final_linear = nn.Sequential(
-            nn.Linear(in_features=64, out_features=32),
-            nn.ReLU(),
+            nn.Linear(in_features=256, out_features=64),
+            nn.ELU(),
             nn.Dropout(p=0.2),
-            nn.Linear(in_features=32, out_features=6),
+            nn.Linear(in_features=64, out_features=6),
         )
 
     def forward(self, x0):
@@ -93,8 +87,7 @@ class Net(nn.Module):
         x0 = self.conv1x1_1(x0)
         x3 = x0
         x0 = self.basic_blocks[2](x0)
-        x0 = torch.cat((x0, x2, x3), dim=1)
-        x0 = self.conv1x1_2(x0)
+        x0 = torch.cat((x0, x1, x2, x3), dim=1)
         x0 = self.final_pool(x0)
         x0 = torch.flatten(x0, start_dim=1)
         x0 = self.final_linear(x0)
