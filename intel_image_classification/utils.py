@@ -1,8 +1,41 @@
+from dataclasses import dataclass
+
 import seaborn as sns
 import torch
 import torchvision
 from matplotlib.figure import Figure
-from torchvision.transforms import v2
+from torch.utils.data import DataLoader
+from torch.utils.tensorboard import SummaryWriter
+from torchmetrics.classification.confusion_matrix import MulticlassConfusionMatrix
+from torchmetrics.collections import MetricCollection
+
+
+@dataclass
+class DataAndLoaders:
+    train_loader: DataLoader
+    valid_loader: DataLoader
+    test_loader: DataLoader
+    classes: list[str]
+
+
+@dataclass
+class OptimizationSuite:
+    criterion: torch.nn.modules.loss._Loss
+    optimizer: torch.optim.Optimizer
+    scheduler: torch.optim.lr_scheduler.LRScheduler
+
+
+@dataclass
+class LoggingSuite:
+    metrics: MetricCollection
+    conf_matrix: MulticlassConfusionMatrix
+    writer: SummaryWriter
+
+
+@dataclass
+class TrainerConfig:
+    checkpoint_path: str
+
 
 # def figure_of_confusion_matrix(matrix, class_names):
 #     fig = px.imshow(
@@ -33,52 +66,44 @@ def figure_of_confusion_matrix(matrix, class_names) -> Figure:
 
 
 def get_datasets_and_loaders(
-    train_batch_size=32, valid_batch_size=64, train_num_workers=4, valid_num_workers=4
+    train_transform,
+    test_transform,
+    train_batch_size=32,
+    test_batch_size=64,
+    num_workers=4,
 ):
-    train_transform = v2.Compose(
-        [
-            v2.Resize(size=140),
-            v2.RandomHorizontalFlip(p=0.5),
-            v2.RandomCrop(size=(130, 130)),
-            v2.ColorJitter(brightness=0.1, contrast=0.1),
-            v2.ToImage(),
-            v2.ToDtype(torch.float32, scale=True),
-        ]
-    )
-
     train_set = torchvision.datasets.ImageFolder(
         "data/seg_train", transform=train_transform
     )
     full_test_set = torchvision.datasets.ImageFolder(
-        "data/seg_test",
-        transform=v2.Compose(
-            [
-                v2.Resize(size=140),
-                v2.CenterCrop(size=(130, 130)),
-                v2.ToImage(),
-                v2.ToDtype(torch.float32, scale=True),
-            ]
-        ),
+        "data/seg_test", transform=test_transform
     )
     valid_set, test_set = torch.utils.data.random_split(
         full_test_set, [0.5, 0.5], torch.Generator().manual_seed(42)
     )
 
-    train_loader = torch.utils.data.DataLoader(
+    train_loader = DataLoader(
         train_set,
         batch_size=train_batch_size,
         shuffle=True,
-        num_workers=train_num_workers,
+        num_workers=num_workers,
         persistent_workers=True,
     )
-    valid_loader = torch.utils.data.DataLoader(
+    valid_loader = DataLoader(
         valid_set,
-        batch_size=valid_batch_size,
-        num_workers=valid_num_workers,
+        batch_size=test_batch_size,
+        num_workers=num_workers,
         persistent_workers=True,
     )
+    test_loader = DataLoader(
+        test_set,
+        batch_size=test_batch_size,
+        num_workers=num_workers,
+        persistent_workers=True,
+    )
+    classes = train_set.classes
 
-    return train_set, train_loader, valid_set, valid_loader
+    return DataAndLoaders(train_loader, valid_loader, test_loader, classes)
 
 
 if __name__ == "__main__":
