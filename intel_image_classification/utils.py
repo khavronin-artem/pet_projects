@@ -55,9 +55,7 @@ def display_side_by_side(dfs, dfs_titles=[], common_title=""):
     html_str = ""
     for i, df in enumerate(dfs):
         title = dfs_titles[i] if i < len(dfs_titles) else ""
-        html_str += (
-            f'<div style="margin-right: 20px"><h3>{title}</h3>{df._repr_html_()}</div>'
-        )
+        html_str += f'<div style="margin-right: 20px"><h3>{title}</h3>{df.style.background_gradient(cmap="Blues")._repr_html_()}</div>'
 
     display(
         HTML(f'<h2>{common_title}</h2><div style="display: flex;">{html_str}</div>')
