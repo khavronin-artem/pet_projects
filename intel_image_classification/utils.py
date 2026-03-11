@@ -3,6 +3,7 @@ from dataclasses import dataclass
 import seaborn as sns
 import torch
 import torchvision
+from IPython.display import HTML, display
 from matplotlib.figure import Figure
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
@@ -37,21 +38,6 @@ class TrainerConfig:
     checkpoint_path: str
 
 
-# def figure_of_confusion_matrix(matrix, class_names):
-#     fig = px.imshow(
-#         matrix,
-#         labels=dict(x="predicted", y="true class"),
-#         x=class_names,
-#         y=class_names,
-#         aspect="equal",
-#         text_auto=True,
-#         width=600,
-#         height=600,
-#     )
-#     fig.update_xaxes(side="top")
-#     return fig
-
-
 def figure_of_confusion_matrix(matrix, class_names) -> Figure:
     ax = sns.heatmap(
         matrix, annot=True, xticklabels=class_names, yticklabels=class_names
@@ -63,6 +49,19 @@ def figure_of_confusion_matrix(matrix, class_names) -> Figure:
     # Чтобы pyright не жаловался на fig: Figure | None
     assert fig is not None, "Seaborn failed to create a figure"
     return fig
+
+
+def display_side_by_side(dfs, dfs_titles=[], common_title=""):
+    html_str = ""
+    for i, df in enumerate(dfs):
+        title = dfs_titles[i] if i < len(dfs_titles) else ""
+        html_str += (
+            f'<div style="margin-right: 20px"><h3>{title}</h3>{df._repr_html_()}</div>'
+        )
+
+    display(
+        HTML(f'<h2>{common_title}</h2><div style="display: flex;">{html_str}</div>')
+    )
 
 
 def get_datasets_and_loaders(

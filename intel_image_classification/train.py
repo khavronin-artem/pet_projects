@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import pandas as pd
 import torch
 import utils
 from tqdm.auto import tqdm
@@ -132,6 +133,37 @@ class Trainer:
         if verbose:
             tqdm.write(f"Resuming from epoch {last_epoch + 1}")
         return last_epoch + 1
+
+    @torch.inference_mode()
+    def test(self):
+        self.model.eval()
+        self.log.metrics.reset()
+        self.log.conf_matrix.reset()
+
+        test_pbar = tqdm(self.data.test_loader, desc="Testing", leave=True)
+        for batch, labels in test_pbar:
+            out = self.model(batch)
+            preds = out.argmax(dim=1)
+
+            self.log.metrics.update(preds, labels)
+            self.log.conf_matrix.update(preds, labels)
+
+        metrics_res = self.log.metrics.compute()
+        conf_matrix_res = self.log.conf_matrix.compute()
+
+        return (
+            pd.DataFrame(
+                conf_matrix_res,
+                index=pd.Index(self.data.classes, name="True"),
+                columns=pd.Index(self.data.classes, name="Predicted"),
+            ),
+            pd.DataFrame(
+                {
+                    "Metric": list(metrics_res.keys()),
+                    "Value": [f"{v.item():.4f}" for v in metrics_res.values()],
+                }
+            ),
+        )
 
 
 if __name__ == "__main__":
