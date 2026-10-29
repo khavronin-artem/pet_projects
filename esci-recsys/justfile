@@ -1,0 +1,13 @@
+# Default recipe: list all available commands
+default:
+    @just --list
+
+# Run the test suite
+test:
+    uv run pytest
+
+# Run linting and formatting checks
+lint:
+    uv run ruff check .
+    uv run ruff format --check .
+    uv run pyrefly check .

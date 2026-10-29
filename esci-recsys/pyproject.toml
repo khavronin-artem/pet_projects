@@ -1,0 +1,62 @@
+[project]
+name = "esci-recsys"
+version = "0.1.0"
+description = "Amazon-ESCI"
+readme = "README.md"
+authors = [
+    { name = "Khavronin Artem", email = "99955499+khavronin-artem@users.noreply.github.com" },
+]
+requires-python = ">=3.13"
+dependencies = [
+    "matplotlib>=3.11.2",
+    "pandera[polars]>=0.35.0",
+    "polars>=2.0.0",
+    "torch>=2.14.1",
+]
+
+[dependency-groups]
+dev = [
+    "dvc>=3.67.1",
+    "ipykernel>=7.4.0",
+    "nbconvert>=7.17.2",
+    "pytest>=9.1.1",
+]
+
+[project.scripts]
+esci-recsys = "esci_recsys:main"
+
+[build-system]
+requires = ["uv_build>=0.13.5,<0.14.0"]
+build-backend = "uv_build"
+
+
+#
+# Pyrefly
+#
+
+
+[tool.pyrefly]
+# strictest built-in preset (if your version doesn't know it, delete this line
+# and rely on the [errors] table below)
+preset = "strict"
+
+# don't silently accept unresolved imports
+ignore-missing-imports = []
+replace-imports-with-any = []
+
+# check bodies of unannotated functions too
+untyped-def-behavior = "check-and-infer-return-type"
+
+# only allow Pyrefly's own ignore comments, so `# type: ignore` can't hide errors
+enabled-ignores = ["pyrefly"]
+
+[tool.pyrefly.errors]
+implicit-any = true               # flag missing annotations that become Any
+unannotated-parameter = true
+unannotated-return = true
+missing-override-decorator = true # require @override on overridden methods
+unused-ignore = true              # flag stale ignore comments
+unused-coroutine = true
+bad-override = true
+bad-assignment = true
+bad-return = true
