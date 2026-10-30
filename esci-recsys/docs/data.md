@@ -22,7 +22,7 @@
 ### shopping_queries_dataset_products.parquet
 
 - `product_id` — id товара
-- `product_title` — заголовок товара
+- `product_title` — заголовок гтовара
 - `product_description` — описание
 - `product_bullet_point` — пункты (bullet points)
 - `product_brand` — бренд
